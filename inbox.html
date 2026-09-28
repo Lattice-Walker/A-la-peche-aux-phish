@@ -609,18 +609,49 @@ function showList(){
   renderList();
 }
 
+// ---------- Coordonnees et zoom ----------
+// La page entiere est mise a l'echelle par `html{zoom:var(--zoom)}` quand le
+// mode « gros texte » est actif. Dans ce cas getBoundingClientRect() (comme
+// window.innerWidth/Height) renvoie des pixels ECRAN, alors qu'une valeur
+// ecrite dans style.left est reinterpretee dans l'espace zoome et donc
+// multipliee par le facteur. Sans conversion, tout ce qu'on positionne en JS
+// (menu ⋮, projecteur du tutoriel) part en diagonale hors de l'ecran.
+// On mesure le facteur sur un temoin de 100px plutot que de lire la propriete
+// CSS : ainsi le code vaut aussi pour un moteur qui n'applique pas le zoom aux
+// rectangles, ou il renvoie simplement 1.
+let _zoomProbe = null;
+function zoomScale(){
+  if(!_zoomProbe){
+    _zoomProbe = document.createElement('div');
+    _zoomProbe.style.cssText = 'position:fixed;top:0;left:0;width:100px;height:0;visibility:hidden;pointer-events:none;';
+    document.body.appendChild(_zoomProbe);
+  }
+  const w = _zoomProbe.getBoundingClientRect().width;
+  return w > 0 ? w / 100 : 1;
+}
+// Rectangle d'un element exprime dans l'espace de coordonnees des styles inline.
+function layoutRect(el){
+  const z = zoomScale(), r = el.getBoundingClientRect();
+  return {left:r.left/z, top:r.top/z, right:r.right/z, bottom:r.bottom/z,
+          width:r.width/z, height:r.height/z};
+}
+function viewportW(){ return window.innerWidth / zoomScale(); }
+function viewportH(){ return window.innerHeight / zoomScale(); }
+
 // ---------- ⋮ dropdown menu ----------
 function openMenu(ev){
   ev.stopPropagation();
   const menu = document.getElementById('msgMenu');
   const bd = document.getElementById('menuBackdrop');
-  const r = ev.currentTarget.getBoundingClientRect();
+  const r = layoutRect(ev.currentTarget);
   bd.classList.add('show');
   menu.classList.add('show');
   let top = r.bottom + 4;
   let left = r.right - menu.offsetWidth;
+  if(left + menu.offsetWidth > viewportW() - 8) left = viewportW() - 8 - menu.offsetWidth;
   if(left < 8) left = 8;
-  if(top + menu.offsetHeight > window.innerHeight - 8) top = r.top - menu.offsetHeight - 4;
+  if(top + menu.offsetHeight > viewportH() - 8) top = r.top - menu.offsetHeight - 4;
+  if(top < 8) top = 8;
   menu.style.top = top + 'px';
   menu.style.left = left + 'px';
 }
@@ -893,7 +924,7 @@ function showTourStep(){
   document.getElementById('tourDim').classList.toggle('show', !el);
 
   if(el){
-    const r = el.getBoundingClientRect();
+    const r = layoutRect(el);
     const pad = 6;
     spot.style.display = 'block';
     spot.style.left = (r.left - pad) + 'px';
@@ -921,11 +952,11 @@ function positionTip(tip, r){
   tip.style.transform = 'none';
   const tw = 320, th = tip.offsetHeight || 170;
   let top = r.bottom + 18;
-  if(top + th > window.innerHeight - 12) top = r.top - th - 18;
+  if(top + th > viewportH() - 12) top = r.top - th - 18;
   if(top < 12) top = 12;
   let left = r.left + r.width/2 - tw/2;
+  if(left + tw > viewportW() - 12) left = viewportW() - 12 - tw;
   if(left < 12) left = 12;
-  if(left + tw > window.innerWidth - 12) left = window.innerWidth - 12 - tw;
   tip.style.left = left + 'px';
   tip.style.top = top + 'px';
 }
