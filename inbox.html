@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Boîte de réception</title>
+<link rel="icon" type="image/png" href="assets/logo.png">
+<script src="i18n.js"></script>
+<script src="user.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--gm-red:#d93025;--gm-blue:#1a73e8;--border:#e0e0e0;--txt:#202124;--sub:#5f6368;--hover:#f5f6f7;--zoom:1;}
+html.size-large{--zoom:1.25;}
+html{zoom:var(--zoom);}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Roboto',Arial,sans-serif;color:var(--txt);background:#fff;overflow:hidden;}
+button{font-family:inherit;cursor:pointer;border:none;background:none;}
+.material-icon{font-family:'Material Symbols Outlined';font-weight:normal;font-style:normal;font-size:22px;line-height:1;color:#5f6368;-webkit-font-smoothing:antialiased;user-select:none;}
+
+/* ---------- Top header ---------- */
+header{height:64px;display:flex;align-items:center;padding:0 16px;position:relative;z-index:10;}
+.hleft{display:flex;align-items:center;min-width:200px;gap:8px;}
+.icon-btn{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;}
+.icon-btn:hover{background:rgba(60,64,67,.08);}
+.logo{display:flex;align-items:center;gap:4px;padding-left:4px;}
+.logo img{height:56px;width:56px;object-fit:contain;}
+.hsearch{flex:0 1 720px;margin:0 8px;}
+.searchbox{display:flex;align-items:center;background:#eaf1fb;border-radius:8px;height:48px;padding:0 4px 0 8px;transition:background .1s,box-shadow .1s;}
+.searchbox:focus-within{background:#fff;box-shadow:0 1px 1px 0 rgba(65,69,73,.3),0 1px 3px 1px rgba(65,69,73,.15);}
+.searchbox input{flex:1;border:none;outline:none;background:transparent;font-size:16px;color:#202124;padding:0 8px;}
+.searchbox .icon-btn{width:44px;height:44px;}
+.hright{margin-left:auto;display:flex;align-items:center;gap:4px;}
+.avatar-top{width:32px;height:32px;border-radius:50%;background:#e8a33d;color:#fff;display:flex;align-items:center;justify-content:center;font-size:15px;margin-left:8px;}
+
+/* ---------- Body layout ---------- */
+.app{display:flex;height:calc(100vh / var(--zoom,1) - 64px);}
+
+/* Sidebar */
+.sidebar{width:256px;padding:8px 0 0 8px;flex-shrink:0;overflow-y:auto;display:flex;flex-direction:column;}
+.compose{display:flex;align-items:center;gap:16px;height:56px;border-radius:16px;padding:0 24px 0 16px;box-shadow:0 1px 3px 1px rgba(60,64,67,.15),0 1px 2px 0 rgba(60,64,67,.3);margin:0 12px 16px 0;background:#c2e7ff;color:#001d35;font-family:'Google Sans';font-size:14px;font-weight:500;}
+.compose:hover{box-shadow:0 1px 3px 1px rgba(60,64,67,.3),0 4px 8px 3px rgba(60,64,67,.15);background:#c7e9ff;}
+.compose svg{width:24px;height:24px;}
+.nav-item{display:flex;align-items:center;gap:18px;height:32px;padding:0 12px 0 26px;border-radius:0 16px 16px 0;margin-right:8px;font-family:'Google Sans';font-size:14px;color:#202124;font-weight:500;}
+.nav-item:hover{background:#eaeef6;}
+.nav-item.active{background:#d3e3fd;color:#041e49;font-weight:700;}
+.nav-item .material-icon{font-size:20px;}
+.nav-item .count{margin-left:auto;font-size:12px;color:#5f6368;font-weight:400;}
+.nav-item.active .count{color:#041e49;}
+
+/* Game panel in sidebar */
+.game-panel{margin:auto 12px 16px 8px;padding:16px;border-radius:16px;background:#f1f3f4;font-family:'Google Sans';}
+.game-panel .lvl{font-size:12px;color:#5f6368;text-transform:uppercase;letter-spacing:.5px;}
+.game-panel .lvl-name{font-size:15px;font-weight:700;color:#202124;margin:2px 0 10px;}
+.game-panel .progress{font-size:12px;color:#5f6368;margin-bottom:12px;display:flex;align-items:center;gap:6px;}
+.finish-btn{width:100%;height:40px;border-radius:20px;background:#0b57d0;color:#fff;font-size:14px;font-weight:500;display:flex;align-items:center;justify-content:center;gap:8px;}
+.finish-btn:hover{background:#0a4fbd;}
+.finish-btn .material-icon{color:#fff;font-size:18px;}
+
+/* Main content */
+.content{flex:1;background:#f6f8fc;border-radius:16px 0 0 0;margin:0;overflow:hidden;display:flex;flex-direction:column;}
+.toolbar{height:48px;display:flex;align-items:center;padding:0 16px;gap:4px;flex-shrink:0;}
+.toolbar .tb-icon{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;}
+.toolbar .tb-icon:hover{background:rgba(32,33,36,.06);}
+.toolbar .pager{margin-left:auto;display:flex;align-items:center;gap:4px;color:#5f6368;font-size:13px;}
+
+/* Email list */
+.maillist{flex:1;overflow-y:auto;background:#fff;border-radius:16px 16px 0 0;}
+.mailrow{display:flex;align-items:center;height:40px;padding:0 16px 0 8px;border-bottom:1px solid #f1f3f4;cursor:pointer;font-size:14px;}
+.mailrow:hover{box-shadow:inset 1px 0 0 #dadce0,inset -1px 0 0 #dadce0,0 1px 2px 0 rgba(60,64,67,.3),0 1px 3px 1px rgba(60,64,67,.15);z-index:1;}
+.mailrow.unread{background:#fff;font-weight:700;}
+.mailrow.unread .m-subject,.mailrow.unread .m-sender{color:#202124;font-weight:700;}
+.mailrow:not(.unread) .m-sender,.mailrow:not(.unread) .m-subject{color:#5f6368;}
+.m-cb,.m-star{width:40px;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#5f6368;}
+.m-star .material-icon{font-size:20px;}
+.m-cb input{width:16px;height:16px;}
+.m-sender{width:168px;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-right:12px;}
+.m-body{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-right:16px;}
+.m-subject{color:#202124;}
+.m-snippet{color:#5f6368;font-weight:400;}
+.m-date{width:84px;text-align:right;flex-shrink:0;font-size:12px;color:#5f6368;}
+.mailrow.unread .m-date{color:#202124;font-weight:700;}
+.empty{padding:80px 24px;text-align:center;color:#5f6368;font-size:14px;}
+
+/* Reading view */
+.reader{flex:1;overflow-y:auto;background:#fff;border-radius:16px 16px 0 0;display:none;}
+.reader.show{display:block;}
+.reader-inner{padding:8px 16px 40px;}
+.subject-line{display:flex;align-items:center;gap:12px;padding:12px 0 12px 56px;}
+.subject-line h1{font-size:22px;font-weight:400;color:#202124;}
+.chip{background:#ddd;border-radius:4px;padding:2px 8px;font-size:12px;color:#3c4043;display:inline-flex;align-items:center;gap:4px;}
+.chip .x{cursor:pointer;font-size:14px;color:#5f6368;}
+.msg-head{display:flex;align-items:flex-start;padding:8px 0;}
+.msg-avatar{width:40px;height:40px;border-radius:50%;color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;margin:0 16px;flex-shrink:0;}
+.msg-meta{flex:1;min-width:0;}
+.msg-from{font-size:14px;}
+.msg-from .name{font-weight:700;color:#202124;}
+.msg-from .addr{color:#5f6368;}
+.unsub{color:#1a73e8;margin-left:8px;font-size:12px;cursor:pointer;}
+.msg-to{font-size:12px;color:#5f6368;display:flex;align-items:center;gap:2px;}
+.msg-right{display:flex;align-items:center;gap:8px;color:#5f6368;font-size:12px;flex-shrink:0;padding-right:8px;}
+.msg-right .icon-btn{width:36px;height:36px;}
+.msg-right .icon-btn .material-icon{font-size:20px;}
+.reply-bar{display:flex;gap:12px;padding:24px 0 8px 56px;}
+.reply-btn{display:flex;align-items:center;gap:8px;border:1px solid #dadce0;border-radius:18px;height:36px;padding:0 24px;color:#3c4043;font-family:'Google Sans';font-size:14px;font-weight:500;}
+.reply-btn:hover{background:#f6f8fc;}
+
+/* ---------- Dropdown menu (⋮) ---------- */
+.menu{position:fixed;min-width:280px;background:#fff;border-radius:4px;box-shadow:0 2px 6px 2px rgba(60,64,67,.15),0 1px 2px 0 rgba(60,64,67,.3);padding:8px 0;z-index:100;display:none;font-family:'Roboto',Arial;}
+.menu.show{display:block;}
+.menu-item{display:flex;align-items:center;height:40px;padding:0 24px 0 20px;font-size:14px;color:#202124;white-space:nowrap;cursor:pointer;}
+.menu-item:hover{background:#f1f3f4;}
+.menu-item.danger:hover{background:#fce8e6;}
+.menu-sep{height:1px;background:#e0e0e0;margin:8px 0;}
+.menu-backdrop{position:fixed;inset:0;z-index:99;display:none;}
+.menu-backdrop.show{display:block;}
+/* toast */
+.toast{position:fixed;left:50%;bottom:32px;transform:translateX(-50%) translateY(20px);background:#323232;color:#fff;font-size:14px;padding:14px 24px;border-radius:8px;box-shadow:0 3px 5px -1px rgba(0,0,0,.2);opacity:0;pointer-events:none;transition:.25s;z-index:200;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* ---------- Tutoriel guidé ---------- */
+.tour-dim{position:fixed;inset:0;z-index:400;display:none;background:rgba(20,26,40,.62);}
+.tour-dim.show{display:block;}
+.tour-spot{position:fixed;z-index:401;border-radius:10px;box-shadow:0 0 0 4px #0b57d0,0 0 0 9999px rgba(20,26,40,.62);transition:all .25s ease;pointer-events:none;}
+.tour-spot.pulse{animation:tourpulse 1.4s infinite;}
+@keyframes tourpulse{0%,100%{box-shadow:0 0 0 4px #0b57d0,0 0 0 9999px rgba(20,26,40,.62);}50%{box-shadow:0 0 0 7px #4285f4,0 0 0 9999px rgba(20,26,40,.62);}}
+.tour-tip{position:fixed;z-index:403;width:320px;max-width:calc(100vw - 32px);background:#fff;border-radius:16px;padding:20px 22px;box-shadow:0 8px 30px rgba(0,0,0,.35);font-family:'Google Sans',Arial;pointer-events:auto;}
+.tour-tip .step-badge{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:#0b57d0;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;}
+.tour-tip p{font-size:15.5px;line-height:1.55;color:#202124;margin-bottom:16px;}
+.tour-tip .tip-actions{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.tour-tip .hint{font-size:12.5px;color:#5f6368;display:inline-flex;align-items:center;gap:5px;}
+.tour-tip .hint .material-icon{font-size:16px;color:#0b57d0;}
+.tour-tip .tour-btn{background:#0b57d0;color:#fff;border-radius:20px;height:38px;padding:0 22px;font-family:'Google Sans';font-size:14px;font-weight:500;display:inline-flex;align-items:center;gap:6px;}
+.tour-tip .tour-btn:hover{background:#0a4fbd;}
+.tour-tip .tour-btn .material-icon{color:#fff;font-size:18px;}
+.tour-tip .tour-skip{font-size:12.5px;color:#5f6368;cursor:pointer;}
+.tour-tip .tour-skip:hover{color:#202124;text-decoration:underline;}
+.tour-arrow{position:fixed;z-index:402;color:#0b57d0;font-size:34px;pointer-events:none;animation:tourbob 1s infinite;}
+@keyframes tourbob{0%,100%{transform:translateY(0);}50%{transform:translateY(6px);}}
+
+/* ---------- Results overlay ---------- */
+.overlay{position:fixed;inset:0;background:rgba(32,33,36,.55);display:none;align-items:center;justify-content:center;z-index:300;font-family:'Google Sans',Arial;}
+.overlay.show{display:flex;}
+.result-card{width:min(94vw,1440px);max-height:94vh;overflow-y:auto;background:#fff;border-radius:28px;padding:32px 40px;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,.3);}
+/* En-tete : l'illustration se place A COTE du bloc titre/score, pour ne pas
+   pousser le debrief hors de l'ecran. */
+.result-head{display:flex;align-items:center;justify-content:center;gap:40px;}
+.result-head-main{min-width:0;max-width:820px;}
+.result-card .stars{font-size:40px;letter-spacing:6px;margin-bottom:8px;}
+.result-art{display:none;width:190px;flex-shrink:0;height:auto;}
+.result-art.show{display:block;}
+.result-card h2{font-size:24px;font-weight:700;margin-bottom:6px;color:#202124;}
+.result-card .tagline{font-size:14px;color:#5f6368;margin-bottom:18px;}
+.stats{display:flex;justify-content:center;gap:16px;margin:4px auto 0;flex-wrap:wrap;}
+.stat{background:#f6f8fc;border-radius:16px;padding:14px 28px;text-align:center;min-width:160px;}
+.stat .v{display:block;font-size:32px;font-weight:700;line-height:1.1;}
+.stat .v.good{color:#188038;}
+.stat .v.bad{color:#d93025;}
+.stat .k{font-size:13px;color:#5f6368;}
+/* Debrief / lesson */
+.lesson{text-align:left;background:#f6f8fc;border-radius:20px;padding:24px 28px 26px;margin:20px 0 22px;}
+.lesson h3{font-size:24px;font-weight:700;color:#202124;margin-bottom:12px;display:flex;align-items:center;gap:10px;}
+.lesson h3 .material-icon{font-size:28px;color:#0b57d0;}
+.lesson .intro{font-size:17px;color:#3c4043;line-height:1.6;margin-bottom:18px;}
+.lesson .cols{display:grid;grid-template-columns:1fr 1fr;gap:20px 48px;}
+.lesson .grp-title{font-size:15px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#5f6368;margin:4px 0 12px;}
+.lesson ul{list-style:none;display:flex;flex-direction:column;gap:12px;}
+@media(max-width:720px){.lesson .cols{grid-template-columns:1fr;}
+  .result-head{flex-direction:column;gap:12px;}
+  .result-art{width:150px;}}
+.lesson li{font-size:16px;line-height:1.55;color:#3c4043;display:flex;gap:10px;}
+.lesson li .material-icon{font-size:22px;flex-shrink:0;margin-top:1px;}
+.lesson li.flag .material-icon{color:#d93025;}
+.lesson li.good .material-icon{color:#188038;}
+.lesson li.safe .material-icon{color:#1a73e8;}
+.lesson .cols.cols-3{grid-template-columns:1fr 1fr 1fr;gap:20px 36px;}
+@media(max-width:1100px){.lesson .cols.cols-3{grid-template-columns:1fr 1fr;}}
+@media(max-width:720px){.lesson .cols.cols-3{grid-template-columns:1fr;}}
+/* Ecrans peu hauts : on comprime la carte de resultat pour que le debrief et
+   les boutons restent visibles sans avoir a faire defiler. */
+/* La mise en page large demande ~1130px de haut pour tenir sans defilement :
+   en dessous, on passe en version compacte. */
+@media(max-height:1130px){
+  .result-card{padding:20px 32px;}
+  .result-head{gap:24px;}
+  .result-art{width:140px;}
+  .result-card .stars{font-size:31px;margin-bottom:2px;}
+  .result-card h2{font-size:21px;}
+  .result-card .tagline{margin-bottom:12px;}
+  .stat{padding:8px 18px;min-width:130px;}
+  .stat .v{font-size:25px;}
+  .stat .k{font-size:12px;}
+  .lesson{padding:14px 20px 16px;margin:12px 0 14px;}
+  .lesson h3{font-size:19px;margin-bottom:6px;}
+  .lesson h3 .material-icon{font-size:23px;}
+  .lesson .intro{font-size:14.5px;margin-bottom:11px;}
+  .lesson .cols{gap:14px 36px;}
+  .lesson .grp-title{font-size:13px;margin:0 0 9px;}
+  .lesson ul{gap:8px;}
+  .lesson li{font-size:14px;line-height:1.42;}
+  .lesson li .material-icon{font-size:19px;}
+  .result-actions .btn{height:38px;}
+}
+/* Fenetres vraiment basses (portables 1366x768 et assimiles) : deuxieme palier
+   de compression, pour que le debrief et les boutons tiennent malgre tout. */
+@media(max-height:780px){
+  .result-card{padding:16px 26px;}
+  .result-head{gap:18px;}
+  .result-art{width:112px;}
+  .result-card .stars{font-size:26px;margin-bottom:0;}
+  .result-card h2{font-size:19px;margin-bottom:4px;}
+  .result-card .tagline{font-size:13px;margin-bottom:9px;}
+  .stat{padding:6px 14px;min-width:116px;}
+  .stat .v{font-size:21px;}
+  .stat .k{font-size:11px;}
+  .lesson{padding:12px 16px 13px;margin:10px 0 11px;}
+  .lesson h3{font-size:17px;margin-bottom:5px;}
+  .lesson h3 .material-icon{font-size:20px;}
+  .lesson .intro{font-size:13.5px;line-height:1.5;margin-bottom:9px;}
+  .lesson .cols.cols-3{gap:10px 26px;}
+  .lesson .grp-title{font-size:12px;margin:0 0 7px;}
+  .lesson ul{gap:6px;}
+  .lesson li{font-size:13px;line-height:1.38;}
+  .lesson li .material-icon{font-size:17px;}
+  .result-actions .btn{height:34px;font-size:14px;}
+}
+.result-actions{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;max-width:620px;margin:0 auto;}
+.result-actions .btn{flex:1;min-width:200px;}
+.btn{height:44px;border-radius:22px;font-size:15px;font-weight:500;display:flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;}
+.btn-primary{background:#0b57d0;color:#fff;}
+.btn-primary:hover{background:#0a4fbd;}
+.btn-ghost{background:#f1f3f4;color:#202124;}
+.btn-ghost:hover{background:#e8eaed;}
+
+/* ===================== Affichage mobile (<= 768px) =====================
+   Le bandeau lateral facon Gmail devient un tiroir : sinon il mange les deux
+   tiers d'un ecran de telephone. Les lignes de la liste passent sur deux
+   lignes, et l'en-tete se resserre. */
+@media(max-width:768px){
+  header{height:56px;padding:0 4px;}
+  .hleft{min-width:0;gap:0;}
+  .logo{padding-left:0;}
+  .logo img{height:40px;width:40px;}
+  .icon-btn{width:42px;height:42px;}
+  .hsearch{flex:1 1 auto;margin:0 4px;}
+  .searchbox{height:40px;}
+  .searchbox input{font-size:14px;padding:0 4px;}
+  .searchbox .icon-btn:last-child{display:none;}
+  .hright{gap:0;}
+  .hright .icon-btn{display:none;}
+
+  .app{height:calc(100vh / var(--zoom,1) - 56px);}
+  /* tiroir : on decale avec « left » et non « transform », pour ne pas piéger
+     les elements en position fixed qu'il contient. */
+  .sidebar{position:fixed;top:56px;bottom:0;left:-300px;width:280px;background:#fff;
+           z-index:40;box-shadow:2px 0 14px rgba(0,0,0,.28);transition:left .22s ease;
+           padding:12px 0 0 8px;}
+  .sidebar.open{left:0;}
+  .scrim{display:none;position:fixed;inset:56px 0 0 0;background:rgba(32,33,36,.45);z-index:35;}
+  .scrim.show{display:block;}
+  .content{border-radius:0;}
+
+  .toolbar{padding:0 6px;}
+  .toolbar .pager{display:none;}
+  .toolbar .greet{margin-left:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+
+  /* lignes de liste sur deux niveaux */
+  .mailrow{height:auto;min-height:58px;align-items:center;flex-wrap:wrap;
+           padding:9px 12px;row-gap:2px;}
+  .m-cb{display:none;}
+  .m-star{width:30px;}
+  .m-sender{width:auto;flex:1 1 auto;padding-right:8px;}
+  .m-body{flex:0 0 100%;white-space:normal;padding-right:0;overflow:visible;
+          text-overflow:clip;line-height:1.4;order:3;}
+  .m-date{order:2;margin-left:auto;flex-shrink:0;padding-left:8px;}
+  .list-section{padding:14px 14px 4px;}
+  .list-footer{padding:12px 14px 14px;}
+}
+
+/* Le panneau de niveau sort du tiroir : il devient une barre fixe en bas, pour
+   que « Terminer le niveau » reste toujours atteignable. */
+@media(max-width:768px){
+  .game-panel{position:fixed;left:0;right:0;bottom:0;margin:0;z-index:30;
+              border-radius:16px 16px 0 0;padding:10px 14px;
+              box-shadow:0 -2px 14px rgba(0,0,0,.2);
+              display:grid;grid-template-columns:1fr auto;
+              grid-template-areas:"name btn" "prog btn";
+              column-gap:12px;align-items:center;}
+  .game-panel .lvl{display:none;}
+  .game-panel .lvl-name{grid-area:name;margin:0;font-size:14px;}
+  .game-panel .progress{grid-area:prog;margin:0;font-size:11.5px;}
+  .game-panel .finish-btn{grid-area:btn;width:auto;padding:0 18px;flex-shrink:0;}
+  .maillist,.reader{padding-bottom:86px;}
+
+  .reader-inner{padding:8px 10px 24px;}
+  .msg-avatar{width:32px;height:32px;margin:0 10px;font-size:15px;}
+  .msg-head{flex-wrap:wrap;}
+  .msg-meta{flex:1 1 100%;}
+  .msg-right{width:100%;padding:2px 0 0 66px;}
+  /* On masque les boutons decoratifs, mais JAMAIS le menu « trois points » :
+     c'est par lui qu'on signale un hameconnage. */
+  .msg-right .icon-btn{display:none;}
+  .msg-right #msgMenuBtn{display:flex;margin-left:auto;width:42px;height:42px;}
+  .msg-right #msgMenuBtn .material-icon{font-size:22px;}
+  #r-body{overflow-x:auto;word-break:break-word;}
+  #r-body img{max-width:100%;height:auto;}
+  #r-body table{max-width:100%;}
+  .tour-tip{max-width:calc(100vw - 24px);}
+}
+</style>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+</head>
+<body>
+<header>
+  <div class="hleft">
+    <button class="icon-btn" onclick="onMenuClick()" aria-label="Menu"><span class="material-icon">menu</span></button>
+    <button class="logo" onclick="confirmQuit()" title="Quitter le niveau" style="cursor:pointer;">
+      <img src="assets/logo.png" alt="À la pêche aux phish">
+    </button>
+  </div>
+  <div class="hsearch">
+    <div class="searchbox">
+      <button class="icon-btn"><span class="material-icon">search</span></button>
+      <input data-i18n-ph="searchMail">
+      <button class="icon-btn"><span class="material-icon">tune</span></button>
+    </div>
+  </div>
+  <div class="hright">
+    <button class="icon-btn"><span class="material-icon">help</span></button>
+    <button class="icon-btn"><span class="material-icon">settings</span></button>
+    <button class="icon-btn"><span class="material-icon">apps</span></button>
+    <div class="avatar-top" id="avatarTop">L</div>
+  </div>
+</header>
+
+<div class="app">
+  <div class="scrim" id="scrim" onclick="toggleNav(false)"></div>
+  <aside class="sidebar" id="sidebar">
+    <button class="compose">
+      <svg viewBox="0 0 24 24"><path fill="#5f6368" d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a.996.996 0 000-1.41l-2.34-2.34a.996.996 0 00-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+      Compose
+    </button>
+    <div class="nav-item active"><span class="material-icon">inbox</span>Inbox<span class="count" id="inboxCount">0</span></div>
+    <div class="nav-item"><span class="material-icon">star</span>Starred</div>
+    <div class="nav-item"><span class="material-icon">schedule</span>Snoozed</div>
+    <div class="nav-item"><span class="material-icon">send</span>Sent</div>
+    <div class="nav-item"><span class="material-icon">description</span>Drafts<span class="count">7</span></div>
+    <div class="nav-item"><span class="material-icon">shopping_bag</span>Purchases</div>
+    <div class="nav-item"><span class="material-icon">expand_more</span>More</div>
+
+    <div class="game-panel">
+      <div class="lvl" id="gpLevel">Niveau 1</div>
+      <div class="lvl-name" id="gpName"></div>
+      <div class="progress"><span class="material-icon" style="font-size:16px;color:#188038;">phishing</span><span id="gpProgress">0 signalé</span></div>
+      <button class="finish-btn" id="finishBtn" onclick="finishLevelClick()"><span class="material-icon">flag</span><span data-i18n="gpFinish"></span></button>
+    </div>
+  </aside>
+
+  <main class="content">
+    <div class="toolbar" id="listToolbar">
+      <button class="tb-icon"><span class="material-icon" style="font-size:20px;">check_box_outline_blank</span></button>
+      <button class="tb-icon"><span class="material-icon">refresh</span></button>
+      <button class="tb-icon" onclick="openMenu(event)"><span class="material-icon">more_vert</span></button>
+      <div class="pager" id="listPager"></div>
+    </div>
+    <div class="toolbar" id="readToolbar" style="display:none;">
+      <button class="tb-icon" onclick="showList()"><span class="material-icon">arrow_back</span></button>
+      <button class="tb-icon"><span class="material-icon">archive</span></button>
+      <button class="tb-icon" onclick="reportEmail(EMAILS.find(x=>x.id===currentEmailId),'spam')"><span class="material-icon">report</span></button>
+      <button class="tb-icon"><span class="material-icon">delete</span></button>
+      <button class="tb-icon"><span class="material-icon">mark_email_unread</span></button>
+      <button class="tb-icon"><span class="material-icon">move_to_inbox</span></button>
+      <button class="tb-icon" onclick="openMenu(event)"><span class="material-icon">more_vert</span></button>
+      <div class="pager"></div>
+    </div>
+
+    <div class="maillist" id="maillist"></div>
+
+    <div class="reader" id="reader">
+      <div class="reader-inner">
+        <div class="subject-line">
+          <h1 id="r-subject"></h1>
+          <span class="chip" id="r-chip">Inbox <span class="x">&times;</span></span>
+        </div>
+        <div class="msg-head">
+          <div class="msg-avatar" id="r-avatar"></div>
+          <div class="msg-meta">
+            <div class="msg-from"><span class="name" id="r-name"></span> <span class="addr" id="r-addr"></span><span class="unsub" id="r-unsub">Unsubscribe</span></div>
+            <div class="msg-to">to me <span class="material-icon" style="font-size:16px;">arrow_drop_down</span></div>
+          </div>
+          <div class="msg-right">
+            <span id="r-date"></span>
+            <button class="icon-btn"><span class="material-icon">star_border</span></button>
+            <button class="icon-btn"><span class="material-icon">reply</span></button>
+            <button class="icon-btn" id="msgMenuBtn" onclick="openMenu(event)"><span class="material-icon">more_vert</span></button>
+          </div>
+        </div>
+        <div id="r-body"></div>
+        <div class="reply-bar">
+          <button class="reply-btn"><span class="material-icon" style="font-size:18px;">reply</span>Reply</button>
+          <button class="reply-btn"><span class="material-icon" style="font-size:18px;">forward</span>Forward</button>
+          <button class="reply-btn"><span class="material-icon" style="font-size:18px;">sentiment_satisfied</span></button>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- ⋮ menu -->
+<div class="menu-backdrop" id="menuBackdrop" onclick="closeMenu()"></div>
+<div class="menu" id="msgMenu">
+  <div class="menu-item" onclick="menuAction('reply')" data-i18n="miReply"></div>
+  <div class="menu-item" onclick="menuAction('replyall')" data-i18n="miReplyAll"></div>
+  <div class="menu-item" onclick="menuAction('forward')" data-i18n="miForward"></div>
+  <div class="menu-sep"></div>
+  <div class="menu-item" onclick="menuAction('filter')" data-i18n="miFilter"></div>
+  <div class="menu-item" onclick="menuAction('print')" data-i18n="miPrint"></div>
+  <div class="menu-item" onclick="menuAction('block')" data-i18n="miBlock"></div>
+  <div class="menu-sep"></div>
+  <div class="menu-item danger" onclick="menuAction('spam')" data-i18n="miSpam"></div>
+  <div class="menu-item danger" id="miPhish" onclick="menuAction('phish')" data-i18n="miPhish"></div>
+  <div class="menu-sep"></div>
+  <div class="menu-item" onclick="menuAction('original')" data-i18n="miOriginal"></div>
+  <div class="menu-item" onclick="menuAction('unread')" data-i18n="miUnread"></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<!-- Quit confirmation -->
+<div class="overlay" id="quitOverlay">
+  <div class="result-card" style="padding:36px 32px;">
+    <div style="font-size:40px;margin-bottom:8px;">🎣</div>
+    <h2 style="font-size:22px;" data-i18n="quitTitle"></h2>
+    <div class="tagline" style="margin-bottom:28px;" data-i18n="quitSub"></div>
+    <div class="result-actions">
+      <a class="btn btn-primary" href="index.html"><span class="material-icon" style="color:#fff;font-size:18px;">home</span><span data-i18n="quitYes"></span></a>
+      <button class="btn btn-ghost" onclick="closeQuit()" data-i18n="quitNo"></button>
+    </div>
+  </div>
+</div>
+
+<!-- Tutoriel guidé -->
+<div class="tour-dim" id="tourDim"></div>
+<div class="tour-spot" id="tourSpot" style="display:none;"></div>
+<div class="tour-arrow material-icon" id="tourArrow" style="display:none;">arrow_upward</div>
+<div class="tour-tip" id="tourTip" style="display:none;">
+  <span class="step-badge"><span class="material-icon" style="font-size:16px;color:#0b57d0;">school</span><span id="tourStepLabel">Tutoriel</span></span>
+  <p id="tourText"></p>
+  <div class="tip-actions">
+    <span class="tour-skip" onclick="endTour(true)" data-i18n="tourSkip"></span>
+    <span id="tourAdvance"></span>
+  </div>
+</div>
+
+<!-- Results overlay -->
+<div class="overlay" id="overlay">
+  <div class="result-card">
+    <div class="result-head">
+      <img class="result-art" id="resArt" src="" alt="">
+      <div class="result-head-main">
+        <div class="stars" id="resStars"></div>
+        <h2 id="resTitle"></h2>
+        <div class="tagline" id="resTagline"></div>
+        <div class="stats" id="statsBlock">
+          <div class="stat"><span class="v good" id="resCaught"></span><span class="k" data-i18n="statCaught"></span></div>
+          <div class="stat"><span class="v bad" id="resMissed"></span><span class="k" data-i18n="statEarly"></span></div>
+          <div class="stat"><span class="v bad" id="resFalse"></span><span class="k" data-i18n="statFalse"></span></div>
+        </div>
+      </div>
+    </div>
+    <div class="lesson" id="resLesson"></div>
+    <div class="result-actions">
+      <a class="btn btn-primary" id="resNext" href="#"><span class="material-icon" style="color:#fff;font-size:18px;">arrow_forward</span><span data-i18n="btnNext"></span></a>
+      <button class="btn btn-ghost" onclick="location.reload()"><span class="material-icon" style="font-size:18px;">replay</span><span data-i18n="btnReplay"></span></button>
+      <a class="btn btn-ghost" href="index.html"><span class="material-icon" style="font-size:18px;">home</span><span data-i18n="btnHome"></span></a>
+    </div>
+  </div>
+</div>
+
+<script src="emails.js"></script>
+<script src="emails.en.js"></script>
+<script>
+// Le francais est la langue par defaut ; l'anglais n'est servi que si le
+// joueur l'a choisi et que le jeu de donnees anglais est disponible.
+const LEVELS = (getLang() === 'en' && typeof LEVELS_EN !== 'undefined') ? LEVELS_EN : LEVELS_FR;
+// ---------- Require onboarding ----------
+if(!getUser()){ location.replace('index.html'); }
+const TOKENS = userTokens(getUser());
+
+// ---------- Level bootstrap ----------
+const params = new URLSearchParams(location.search);
+const TUTO = params.get('tuto') === '1';
+
+// Boîte de réception dédiée au tutoriel : un seul e-mail, clairement piégé.
+const TUTO_LEVEL = {
+  id: 'tuto', name: t('gpTutorial'), lesson: null,
+  emails: [{
+    id: 1,
+    senderName: t('tutoSender'),
+    senderEmail: "securite@ma-banque-alerte.com",
+    avatarColor: "#c0392b", avatarLetter: "B",
+    subject: t('tutoMailSubject'),
+    labels: ["Inbox"],
+    date: "Mon, Sep 28, 9:30 AM (today)", listTime: "9:30 AM",
+    snippet: t('tutoMailSnippet'),
+    unread: true, starred: false, isPhish: true, unsubscribe: false,
+    bodyHtml: `
+      <div style="max-width:600px;margin:24px auto;font-family:Arial,sans-serif;color:#2c2e2f;">
+        <div style="background:#c0392b;padding:18px 24px;border-radius:8px 8px 0 0;"><span style="color:#fff;font-size:20px;font-weight:bold;">` + t('tutoSender') + `</span></div>
+        <div style="border:1px solid #e0e0e0;border-top:none;border-radius:0 0 8px 8px;padding:30px 24px;">
+          <h2 style="font-size:19px;margin:0 0 16px;">` + t('tutoMailHead') + `</h2>
+          <p style="font-size:14px;line-height:1.6;margin:0 0 16px;">` + t('tutoMailBody') + `</p>
+          <div style="text-align:center;margin:0 0 8px;"><a href="#" style="display:inline-block;background:#c0392b;color:#fff;text-decoration:none;padding:12px 32px;border-radius:6px;font-size:15px;font-weight:bold;">` + t('tutoMailBtn') + `</a></div>
+        </div>
+      </div>`
+  }]
+};
+
+let levelIdx = Math.max(0, (parseInt(params.get('level'),10) || 1) - 1);
+if(levelIdx >= LEVELS.length) levelIdx = 0;
+const LEVEL = TUTO ? TUTO_LEVEL : LEVELS[levelIdx];
+// Destination affichee par le navigateur quand on survole un lien.
+// Le chemin est volontairement du meme style pour les e-mails legitimes et
+// pieges : seul LE DOMAINE distingue les uns des autres, et c'est bien ce que
+// le joueur doit apprendre a lire.
+const LINK_PATHS = ['/mon-compte', '/connexion', '/verification', '/suivi',
+                    '/espace-client', '/securite', '/acces', '/confirmation'];
+function linkFor(e){
+  if(e.linkUrl) return e.linkUrl;                        // destination explicite
+  const dom = (String(e.senderEmail).split('@')[1] || '').trim();
+  if(!dom) return '#';
+  return 'https://' + dom + LINK_PATHS[(Number(e.id) || 0) % LINK_PATHS.length];
+}
+
+let EMAILS = LEVEL.emails.map(e => {
+  const c = Object.assign({}, e);                        // working copy
+  c.senderName  = personalize(c.senderName,  TOKENS);    // inject the player's identity
+  c.subject     = personalize(c.subject,     TOKENS);
+  c.snippet     = personalize(c.snippet,     TOKENS);
+  c.senderEmail = personalize(c.senderEmail, TOKENS);
+  c.bodyHtml    = personalize(c.bodyHtml,    TOKENS)
+                    .replace(/href="#"/g, 'href="' + linkFor(c) + '"');
+  return c;
+});
+const TOTAL_PHISH = EMAILS.filter(e => e.isPhish).length;
+const reported = [];   // {id, isPhish, kind}
+let currentEmailId = null;
+let levelDone = false;
+let trapLinkClicked = false;   // le joueur a cliqué sur un lien d'un e-mail piégé
+let prematureAttempts = 0;     // validations lancées alors qu'il restait des pièges
+
+document.title = t('inboxTitle') + LEVEL.name;
+document.getElementById('avatarTop').textContent = TOKENS.initiale;
+document.getElementById('avatarTop').title = TOKENS.fullName + ' · ' + TOKENS.email;
+document.getElementById('gpLevel').textContent = TUTO ? t('gpTutorial') : (t('levelWord') + ' ' + LEVEL.id);
+document.getElementById('gpName').textContent = TUTO ? t('gpHowTo') : LEVEL.name;
+// Le bouton reste visible pendant le tutoriel : c'est precisement le geste
+// que l'etape 5 enseigne. Pendant la visite, le clic ne fait qu'avancer.
+
+function updateChrome(){
+  document.getElementById('inboxCount').textContent = EMAILS.length;
+  document.getElementById('gpProgress').textContent =
+    reported.length + ' ' + (reported.length === 1 ? t('gpReportedOne') : t('gpReportedMany'));
+  const n = EMAILS.length, total = LEVEL.emails.length;
+  document.getElementById('listPager').innerHTML =
+    (n ? '1&ndash;' + n : '0') + ' of ' + total;
+}
+
+// ---------- List + reader ----------
+function renderList(){
+  const list = document.getElementById('maillist');
+  if(!EMAILS.length){
+    list.innerHTML = '<div class="empty">' + t('listEmpty') + '</div>';
+  } else {
+    list.innerHTML = EMAILS.map(e => `
+      <div class="mailrow ${e.unread?'unread':''}" onclick="openEmail(${e.id})">
+        <div class="m-cb"><input type="checkbox" onclick="event.stopPropagation()"></div>
+        <div class="m-star"><span class="material-icon">${e.starred?'star':'star_border'}</span></div>
+        <div class="m-sender">${e.senderName}</div>
+        <div class="m-body"><span class="m-subject">${e.subject}</span> <span class="m-snippet">&ndash; ${e.snippet}</span></div>
+        <div class="m-date">${e.listTime}</div>
+      </div>`).join('');
+  }
+  updateChrome();
+}
+function openEmail(id){
+  const e = EMAILS.find(x=>x.id===id);
+  currentEmailId = id;
+  e.unread = false;
+  document.getElementById('r-subject').textContent = e.subject;
+  document.getElementById('r-chip').innerHTML = e.labels[0] + ' <span class="x">&times;</span>';
+  document.getElementById('r-avatar').textContent = e.avatarLetter;
+  document.getElementById('r-avatar').style.background = e.avatarColor;
+  document.getElementById('r-name').textContent = e.senderName;
+  document.getElementById('r-addr').textContent = '<'+e.senderEmail+'>';
+  document.getElementById('r-unsub').style.display = e.unsubscribe ? 'inline' : 'none';
+  document.getElementById('r-date').textContent = e.date;
+  document.getElementById('r-body').innerHTML = e.bodyHtml;
+  document.getElementById('maillist').style.display='none';
+  document.getElementById('reader').classList.add('show');
+  document.getElementById('listToolbar').style.display='none';
+  document.getElementById('readToolbar').style.display='flex';
+  document.getElementById('reader').scrollTop = 0;
+}
+function showList(){
+  document.getElementById('reader').classList.remove('show');
+  document.getElementById('maillist').style.display='block';
+  document.getElementById('listToolbar').style.display='flex';
+  document.getElementById('readToolbar').style.display='none';
+  renderList();
+}
+
+// ---------- ⋮ dropdown menu ----------
+function openMenu(ev){
+  ev.stopPropagation();
+  const menu = document.getElementById('msgMenu');
+  const bd = document.getElementById('menuBackdrop');
+  const r = ev.currentTarget.getBoundingClientRect();
+  bd.classList.add('show');
+  menu.classList.add('show');
+  let top = r.bottom + 4;
+  let left = r.right - menu.offsetWidth;
+  if(left < 8) left = 8;
+  if(top + menu.offsetHeight > window.innerHeight - 8) top = r.top - menu.offsetHeight - 4;
+  menu.style.top = top + 'px';
+  menu.style.left = left + 'px';
+}
+function closeMenu(){
+  document.getElementById('msgMenu').classList.remove('show');
+  document.getElementById('menuBackdrop').classList.remove('show');
+}
+function menuAction(action){
+  closeMenu();
+  const e = EMAILS.find(x=>x.id===currentEmailId);
+  if(action === 'phish'){ reportEmail(e, 'phish'); return; }
+  if(action === 'spam'){ reportEmail(e, 'spam'); return; }
+  if(action === 'unread' && e){ e.unread = true; showList(); toast('Marqué comme non lu'); return; }
+  toast('Action : ' + action);
+}
+
+// ---------- Game: report an email ----------
+function reportEmail(email, kind){
+  if(!email){ toast(t('toastOpenFirst')); return; }
+  const correct = email.isPhish === true;
+  reported.push({id: email.id, isPhish: correct, kind});
+  const idx = EMAILS.findIndex(x=>x.id===email.id);
+  if(idx>-1) EMAILS.splice(idx,1);
+  showList();
+  toast(correct ? t('toastGood') : t('toastBad'));
+  document.dispatchEvent(new CustomEvent('email-reported', {detail:{email, kind, correct}}));
+  // Le niveau ne se termine JAMAIS tout seul : seul le bouton « Terminer le
+  // niveau » y met fin, pour laisser le joueur relire la boite a sa guise.
+}
+
+// ---------- Debrief pédagogique (réutilisé victoire / défaite) ----------
+function renderLesson(){
+  const L = LEVEL.lesson;
+  const box = document.getElementById('resLesson');
+  if(!L){ box.style.display = 'none'; return; }
+  box.style.display = 'block';
+  // Les messages legitimes qui avaient l'air suspects : c'est la colonne la
+  // plus instructive du debrief, elle n'apparait que si le niveau en contient.
+  const safe = L.safeCases || [];
+  const colSafe = safe.length
+    ? '<div><div class="grp-title">' + t('grpSafe') + '</div>' +
+        '<ul>' + safe.map(c =>
+          '<li class="safe"><span class="material-icon">verified_user</span><span><b>' + c.name + '</b> : ' + c.why + '</span></li>').join('') + '</ul></div>'
+    : '';
+
+  box.innerHTML = personalize(
+    '<h3><span class="material-icon">school</span>' + L.title + '</h3>' +
+    '<div class="intro">' + L.intro + '</div>' +
+    '<div class="cols' + (safe.length ? ' cols-3' : '') + '">' +
+      '<div><div class="grp-title">' + t('grpTraps') + '</div>' +
+        '<ul>' + L.cases.map(c =>
+          '<li class="flag"><span class="material-icon">phishing</span><span><b>' + c.name + '</b> : ' + c.why + '</span></li>').join('') + '</ul></div>' +
+      colSafe +
+      '<div><div class="grp-title">' + t('grpReflex') + '</div>' +
+        '<ul>' + L.reflexes.map(r =>
+          '<li class="good"><span class="material-icon">check_circle</span><span>' + r + '</span></li>').join('') + '</ul></div>' +
+    '</div>', TOKENS);
+}
+
+// ---------- Défaite immédiate : clic sur un lien piégé ----------
+// Illustration de fin de niveau : le pirate pleure si le joueur l'a emporte,
+// il jubile si au moins un piege est passe au travers.
+function setResultArt(playerWon){
+  const art = document.getElementById('resArt');
+  art.src = playerWon ? 'assets/win.png' : 'assets/lose.png';
+  art.alt = playerWon
+    ? "Un pirate depite pleure devant son ecran : aucun de ses pieges n'a fonctionne."
+    : "Un pirate triomphant leve les poings devant son ecran : l'un de ses pieges a fonctionne.";
+  art.classList.add('show');
+}
+
+// Clic sur un lien d'un e-mail piégé : le niveau est échoué immédiatement.
+// C'est la seule chose qui termine un niveau sans que le joueur ait cliqué sur
+// « Terminer le niveau », et c'est voulu : dans la réalité, le mal est fait au
+// moment du clic.
+function failByLink(){
+  if(levelDone) return;
+  levelDone = true;
+  trapLinkClicked = true;
+  showDefeat('link');
+}
+
+function defeatCopy(reason){
+  return reason === 'premature'
+    ? { title: t('defeatEarlyTitle'), text: t('defeatEarlyText') }
+    : { title: t('defeatLinkTitle'),  text: t('defeatLinkText')  };
+}
+
+function showDefeat(reason){
+  const d = defeatCopy(reason);
+  setResultArt(false);
+  const s = document.getElementById('resStars');
+  s.textContent = '☆ ☆ ☆';
+  s.style.color = '#d93025';
+  document.getElementById('resTitle').textContent = d.title;
+  const tag = document.getElementById('resTagline');
+  tag.style.fontSize = '19px';
+  tag.style.lineHeight = '1.6';
+  tag.innerHTML = d.text;
+  document.getElementById('statsBlock').style.display = 'none';
+  renderLesson();
+  document.getElementById('resNext').style.display = 'none';
+  document.getElementById('overlay').classList.add('show');
+}
+
+// intercepte les clics sur les liens à l'intérieur d'un e-mail ouvert
+function handleMailLink(ev){
+  const a = ev.target.closest('a');
+  if(!a) return;
+  ev.preventDefault();                       // les liens du jeu ne naviguent jamais
+  if(ev.type !== 'click') return;            // clic du milieu : on bloque, sans sanction
+  const e = EMAILS.find(x => x.id === currentEmailId);
+  if(!TUTO && e && e.isPhish){ failByLink(); }  // piège → défaite immédiate
+}
+document.getElementById('r-body').addEventListener('click', handleMailLink);
+document.getElementById('r-body').addEventListener('auxclick', handleMailLink);
+
+// ---------- Game: end of level ----------
+// On ne peut pas reussir un niveau en laissant passer un hameconnage.
+// 1re validation prematuree : -1 etoile. 2e : -2. 3e : niveau echoue.
+// Le message ne dit jamais COMBIEN de pieges restent : ce serait donner la
+// reponse au joueur.
+function finishLevelClick(){
+  if(TUTO) return;      // pendant le tutoriel, le clic fait avancer la visite
+  if(levelDone) return;
+  const caught = reported.filter(r => r.isPhish).length;
+  if(caught < TOTAL_PHISH){
+    prematureAttempts++;
+    if(prematureAttempts >= 3){
+      levelDone = true;
+      showDefeat('premature');
+      return;
+    }
+    toast(prematureAttempts === 1 ? t('toastEarly1') : t('toastEarly2'));
+    return;
+  }
+  finishLevel();
+}
+
+function finishLevel(){
+  if(levelDone) return;
+  levelDone = true;
+  if(trapLinkClicked){ showDefeat('link'); return; }
+  const caught = reported.filter(r=>r.isPhish).length;
+  const falseReports = reported.filter(r=>!r.isPhish).length;
+  const missed = TOTAL_PHISH - caught;
+
+  // Le pirate ne jubile que si un piege est reellement passe au travers.
+  // Un faux signalement coute des etoiles, mais ne lui donne pas la victoire.
+  setResultArt(missed === 0);
+
+  // Le niveau ne peut se terminer qu'une fois tous les pièges éliminés : il ne
+  // reste donc a penaliser que les faux signalements et les validations
+  // prematurees, a raison d'une etoile chacun.
+  const stars = Math.max(0, 3 - falseReports - prematureAttempts);
+
+  // persist best score for the homepage
+  try{
+    const prog = JSON.parse(localStorage.getItem('phish_progress') || '{}');
+    prog[LEVEL.id] = Math.max(prog[LEVEL.id] || 0, stars);
+    localStorage.setItem('phish_progress', JSON.stringify(prog));
+  }catch(e){}
+
+  const titles = [t('resTitle0'), t('resTitle1'), t('resTitle2'), t('resTitle3')];
+  document.getElementById('resStars').textContent =
+    '★'.repeat(stars) + '☆'.repeat(3 - stars);
+  document.getElementById('resTitle').textContent = titles[stars];
+  document.getElementById('resTagline').textContent =
+    stars === 3 ? t('resTagPerfect') : t('resTagOther');
+  document.getElementById('resCaught').textContent = caught + ' / ' + TOTAL_PHISH;
+  document.getElementById('resMissed').textContent = prematureAttempts;
+  document.getElementById('resFalse').textContent = falseReports;
+
+  renderLesson();
+
+  const nextBtn = document.getElementById('resNext');
+  if(levelIdx + 1 < LEVELS.length){
+    nextBtn.href = 'inbox.html?level=' + (LEVEL.id + 1);
+    nextBtn.style.display = 'flex';
+  } else {
+    nextBtn.style.display = 'none';
+  }
+  document.getElementById('overlay').classList.add('show');
+}
+
+// ---------- Quit confirmation ----------
+function confirmQuit(){ document.getElementById('quitOverlay').classList.add('show'); }
+
+// Tiroir de navigation (affichage mobile uniquement).
+function toggleNav(force){
+  const sb = document.getElementById('sidebar'), sc = document.getElementById('scrim');
+  const open = (force === undefined) ? !sb.classList.contains('open') : force;
+  sb.classList.toggle('open', open);
+  sc.classList.toggle('show', open);
+}
+// Sur telephone le hamburger ouvre le tiroir ; sur ordinateur il quitte le niveau,
+// comme avant. Le logo reste un raccourci « quitter » dans les deux cas.
+function onMenuClick(){
+  if(window.matchMedia('(max-width:768px)').matches){ toggleNav(); }
+  else { confirmQuit(); }
+}
+function closeQuit(){ document.getElementById('quitOverlay').classList.remove('show'); }
+
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._t);
+  t._t = setTimeout(()=>t.classList.remove('show'), 3200);
+}
+
+// ---------- Moteur de tutoriel guidé ----------
+const STEP = n => t('tourStep') + ' ' + n + ' ' + t('tourStepOf') + ' 5';
+const TOUR = [
+  { info:true, label:t('tourWelcome'), text:t('tour0'), btn:t('tour0btn') },
+  { target:()=>document.querySelector('.mailrow'), advanceOnClick:true, label:STEP(1),
+    text:t('tour1'), delay:150 },
+  { target:()=>document.querySelector('.msg-from'), label:STEP(2),
+    text:t('tour2'), btn:t('tour2btn') },
+  { target:()=>document.getElementById('msgMenuBtn'), advanceOnClick:true, label:STEP(3),
+    text:t('tour3'), delay:150 },
+  { target:()=>document.getElementById('miPhish'), advanceOnClick:true, label:STEP(4),
+    text:t('tour4'), delay:300 },
+  { target:()=>document.getElementById('finishBtn'), advanceOnClick:true, label:STEP(5),
+    text:t('tour5'), delay:150 },
+  { info:true, label:t('tourDone'), success:true, text:t('tour6'), btn:t('tour6btn') }
+];
+let tourIdx = 0, tourClickTarget = null, tourClickHandler = null;
+
+function startTour(){
+  document.getElementById('tourDim').classList.add('show');
+  tourIdx = 0;
+  showTourStep();
+}
+function clearTourListener(){
+  if(tourClickTarget && tourClickHandler){
+    tourClickTarget.removeEventListener('click', tourClickHandler);
+  }
+  tourClickTarget = null; tourClickHandler = null;
+}
+function showTourStep(){
+  const s = TOUR[tourIdx];
+  clearTourListener();
+  document.getElementById('tourStepLabel').textContent = s.label || 'Tutoriel';
+  document.getElementById('tourText').textContent = s.text;
+
+  const spot = document.getElementById('tourSpot');
+  const arrow = document.getElementById('tourArrow');
+  const tip = document.getElementById('tourTip');
+  const adv = document.getElementById('tourAdvance');
+  const el = s.target ? s.target() : null;
+
+  // bouton / consigne d'avance
+  if(s.advanceOnClick){
+    adv.innerHTML = '<span class="hint"><span class="material-icon">touch_app</span>' + t('tourClickHint') + '</span>';
+  } else {
+    adv.innerHTML = '';
+    const b = document.createElement('button');
+    b.className = 'tour-btn';
+    b.innerHTML = (s.success ? '<span class="material-icon">celebration</span>' : '') + (s.btn || 'Suivant');
+    b.onclick = () => { s.success ? endTour(false) : nextTourStep(); };
+    adv.appendChild(b);
+  }
+
+  tip.style.display = 'block';
+
+  // Le voile plein ecran n'est utile que pour les etapes sans cible : quand il y
+  // a une cible, c'est l'ombre portee du projecteur qui assombrit le reste, en
+  // laissant un trou transparent sur l'element a cliquer.
+  document.getElementById('tourDim').classList.toggle('show', !el);
+
+  if(el){
+    const r = el.getBoundingClientRect();
+    const pad = 6;
+    spot.style.display = 'block';
+    spot.style.left = (r.left - pad) + 'px';
+    spot.style.top = (r.top - pad) + 'px';
+    spot.style.width = (r.width + pad*2) + 'px';
+    spot.style.height = (r.height + pad*2) + 'px';
+    spot.classList.toggle('pulse', !!s.advanceOnClick);
+    arrow.style.display = 'block';
+    arrow.style.left = (r.left + r.width/2 - 17) + 'px';
+    arrow.style.top = (r.bottom + 6) + 'px';
+    positionTip(tip, r);
+    if(s.advanceOnClick){
+      tourClickTarget = el;
+      tourClickHandler = () => setTimeout(nextTourStep, s.delay || 120);
+      el.addEventListener('click', tourClickHandler, {once:true});
+    }
+  } else {
+    spot.style.display = 'none';
+    arrow.style.display = 'none';
+    tip.style.left = '50%'; tip.style.top = '50%';
+    tip.style.transform = 'translate(-50%,-50%)';
+  }
+}
+function positionTip(tip, r){
+  tip.style.transform = 'none';
+  const tw = 320, th = tip.offsetHeight || 170;
+  let top = r.bottom + 18;
+  if(top + th > window.innerHeight - 12) top = r.top - th - 18;
+  if(top < 12) top = 12;
+  let left = r.left + r.width/2 - tw/2;
+  if(left < 12) left = 12;
+  if(left + tw > window.innerWidth - 12) left = window.innerWidth - 12 - tw;
+  tip.style.left = left + 'px';
+  tip.style.top = top + 'px';
+}
+function nextTourStep(){
+  tourIdx++;
+  if(tourIdx >= TOUR.length){ endTour(false); return; }
+  showTourStep();
+}
+function endTour(skipped){
+  clearTourListener();
+  document.getElementById('tourDim').classList.remove('show');
+  document.getElementById('tourSpot').style.display = 'none';
+  document.getElementById('tourArrow').style.display = 'none';
+  document.getElementById('tourTip').style.display = 'none';
+  location.href = skipped ? 'index.html' : 'inbox.html?level=1';
+}
+
+renderList();
+if(TUTO) startTour();
+</script>
+<script>applyI18n();</script>
+</body>
+</html>
