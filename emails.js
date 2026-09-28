@@ -691,7 +691,7 @@ const LEVELS_FR = [
       cases: [
         { name: "L'ordre de virement du « dirigeant »", why: "Un faux directeur réclame un virement urgent et confidentiel. L'adresse <b>direction-groupe-fr.com</b> imite le nom de l'entreprise sans en être le vrai domaine." },
         { name: "Le faux « changement de RIB »", why: "Un « fournisseur » annonce un nouveau compte bancaire pour ses factures. Changer un RIB sur simple e-mail permet de détourner tous les paiements." },
-        { name: "Le détournement de fil de discussion", why: "Le plus redoutable : le message reprend <b>l'historique d'un vrai échange</b> pour inspirer confiance. Mais l'adresse a changé d'une lettre : <b>meunier-sarI.fr</b> avec un i majuscule au lieu d'un l, et le nouveau RIB arrive avec une échéance dépassée." }
+        { name: "Le détournement de fil de discussion", why: "Le plus redoutable : le message reprend <b>l'historique d'un vrai échange</b> pour inspirer confiance. Mais l'adresse a changé : <b>rneunier-sarl.fr</b>, où le <b>m</b> du début est en réalité un <b>r</b> suivi d'un <b>n</b>, et le nouveau RIB arrive avec une échéance dépassée." }
       ],
       safeCases: [
         { name: "Le vrai changement de domiciliation bancaire", why: "C'est le scénario d'arnaque le plus coûteux du monde professionnel… et pourtant celui-ci est authentique. Le domaine <b>meunier-sarl.fr</b> est celui qui figure sur les factures précédentes, le message <b>n'est pas urgent</b> (applicable au 1er décembre), il annonce un courrier recommandé en parallèle, et il vous demande explicitement <b>d'appeler pour confirmer avant tout virement</b>. Un fournisseur honnête souhaite que vous l'appeliez." }
@@ -769,7 +769,7 @@ const LEVELS_FR = [
       {
         id: 4,
         senderName: "Alain Rocher",
-        senderEmail: "a.rocher@meunier-sarI.fr",
+        senderEmail: "a.rocher@rneunier-sarl.fr",
         avatarColor: "#5f6368", avatarLetter: "A",
         subject: "RE: Facture 2025-0118, précision sur le règlement",
         labels: ["Inbox"],
@@ -1322,7 +1322,7 @@ const LEVELS_FR = [
       {
         id: 6,
         senderName: "leboncoin",
-        senderEmail: "no-reply@e.leboncoin.fr",
+        senderEmail: "no-reply@leboncoin.fr",
         avatarColor: "#ff6e14", avatarLetter: "l",
         subject: "Votre commande est confirmée",
         labels: ["Inbox"],

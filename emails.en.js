@@ -635,7 +635,7 @@ const LEVELS_EN = [
       cases: [
         { name: "The director's transfer order", why: "A fake director demands an urgent and confidential transfer. The address <b>direction-groupe-fr.com</b> imitates the company name without being its real domain." },
         { name: "The fake change of bank details", why: "A supplier announces a new bank account for its invoices. Changing bank details on the strength of an email alone lets an attacker divert every payment." },
-        { name: "Thread hijacking", why: "The most dangerous of all: the message quotes <b>the history of a genuine exchange</b> to earn your trust. But the address has changed by one letter, <b>meunier-sarI.fr</b> with a capital i instead of an l, and the new bank details arrive with an overdue deadline." }
+        { name: "Thread hijacking", why: "The most dangerous of all: the message quotes <b>the history of a genuine exchange</b> to earn your trust. But the address has changed: <b>rneunier-sarl.fr</b>, where the opening <b>m</b> is really an <b>r</b> followed by an <b>n</b>, and the new bank details arrive with an overdue deadline." }
       ],
       safeCases: [
         { name: "The real change of bank details", why: "This is the costliest fraud scenario in business, and yet this one is genuine. The domain <b>meunier-sarl.fr</b> is the one printed on previous invoices, the message <b>is not urgent</b> (effective 1 December), it announces a recorded letter sent in parallel, and it explicitly asks you <b>to call and confirm before any transfer</b>. An honest supplier wants you to call." }
@@ -715,7 +715,7 @@ const LEVELS_EN = [
       {
         id: 4,
         senderName: "Alain Rocher",
-        senderEmail: "a.rocher@meunier-sarI.fr",
+        senderEmail: "a.rocher@rneunier-sarl.fr",
         avatarColor: "#5f6368", avatarLetter: "A",
         subject: "RE: Invoice 2025-0118, note on payment",
         labels: ["Inbox"],
@@ -1247,7 +1247,7 @@ const LEVELS_EN = [
       {
         id: 6,
         senderName: "leboncoin",
-        senderEmail: "no-reply@e.leboncoin.fr",
+        senderEmail: "no-reply@leboncoin.fr",
         avatarColor: "#ff6e14", avatarLetter: "l",
         subject: "Your order is confirmed",
         labels: ["Inbox"],
