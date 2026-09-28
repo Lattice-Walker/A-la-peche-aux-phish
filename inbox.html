@@ -9,6 +9,7 @@
 <script src="user.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&display=block" rel="stylesheet">
 <style>
 :root{--gm-red:#d93025;--gm-blue:#1a73e8;--border:#e0e0e0;--txt:#202124;--sub:#5f6368;--hover:#f5f6f7;--zoom:1;}
 html.size-large{--zoom:1.25;}
@@ -308,7 +309,6 @@ header{height:64px;display:flex;align-items:center;padding:0 16px;position:relat
   .tour-tip{max-width:calc(100vw - 24px);}
 }
 </style>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
 </head>
 <body>
 <header>
@@ -879,12 +879,14 @@ const TOUR = [
     text:t('tour5'), delay:150 },
   { info:true, label:t('tourDone'), success:true, text:t('tour6'), btn:t('tour6btn') }
 ];
-let tourIdx = 0, tourClickTarget = null, tourClickHandler = null;
+let tourIdx = 0, tourClickTarget = null, tourClickHandler = null, tourActive = false;
 
 function startTour(){
   document.getElementById('tourDim').classList.add('show');
   tourIdx = 0;
+  tourActive = true;
   showTourStep();
+  watchTourLayout();
 }
 function clearTourListener(){
   if(tourClickTarget && tourClickHandler){
@@ -918,6 +920,24 @@ function showTourStep(){
 
   tip.style.display = 'block';
 
+  if(el && s.advanceOnClick){
+    tourClickTarget = el;
+    tourClickHandler = () => setTimeout(nextTourStep, s.delay || 120);
+    el.addEventListener('click', tourClickHandler, {once:true});
+  }
+  placeTourStep();
+}
+
+// Geometrie du projecteur, separee de showTourStep() pour pouvoir etre rejouee
+// a l'identique quand la page bouge sous nos pieds.
+function placeTourStep(){
+  const s = TOUR[tourIdx];
+  if(!s) return;
+  const spot = document.getElementById('tourSpot');
+  const arrow = document.getElementById('tourArrow');
+  const tip = document.getElementById('tourTip');
+  const el = s.target ? s.target() : null;
+
   // Le voile plein ecran n'est utile que pour les etapes sans cible : quand il y
   // a une cible, c'est l'ombre portee du projecteur qui assombrit le reste, en
   // laissant un trou transparent sur l'element a cliquer.
@@ -936,17 +956,32 @@ function showTourStep(){
     arrow.style.left = (r.left + r.width/2 - 17) + 'px';
     arrow.style.top = (r.bottom + 6) + 'px';
     positionTip(tip, r);
-    if(s.advanceOnClick){
-      tourClickTarget = el;
-      tourClickHandler = () => setTimeout(nextTourStep, s.delay || 120);
-      el.addEventListener('click', tourClickHandler, {once:true});
-    }
   } else {
     spot.style.display = 'none';
     arrow.style.display = 'none';
     tip.style.left = '50%'; tip.style.top = '50%';
     tip.style.transform = 'translate(-50%,-50%)';
   }
+}
+
+// Le tutoriel demarre pendant l'analyse du document, donc AVANT l'arrivee des
+// polices distantes. Tant que « Material Symbols » n'est pas la, chaque icone
+// s'affiche comme un mot entier (« star_border ») : les lignes sont bien plus
+// hautes et larges qu'elles ne le seront. Les coordonnees mesurees a cet
+// instant sont donc perimees des que les polices se chargent et que la page se
+// remet en page — d'ou un projecteur decale sur toutes les etapes. On le
+// replace donc a chaque evenement susceptible de deplacer la cible.
+function watchTourLayout(){
+  const replace = () => { if(tourActive) placeTourStep(); };
+  window.addEventListener('resize', replace);
+  window.addEventListener('scroll', replace, true);
+  if(document.fonts){
+    document.fonts.ready.then(replace);
+    document.fonts.addEventListener('loadingdone', replace);
+  }
+  // Filet de securite pour les navigateurs sans document.fonts : on repasse
+  // quelques fois pendant les premieres secondes de la visite.
+  [200, 600, 1200, 2500].forEach(d => setTimeout(replace, d));
 }
 function positionTip(tip, r){
   tip.style.transform = 'none';
@@ -966,6 +1001,7 @@ function nextTourStep(){
   showTourStep();
 }
 function endTour(skipped){
+  tourActive = false;
   clearTourListener();
   document.getElementById('tourDim').classList.remove('show');
   document.getElementById('tourSpot').style.display = 'none';
